@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoginForm</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2 id="formTitle">Log In</h2>
+
+        <form id="LoginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" placeholder="Enter your Username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter your Password" required>
+
+            <button type="submit" id="submitBtn">Log In</button>
+        </form>
+
+        <p id="errorMessage" class="error"></p>
+        
+        <p class="toggle-text">
+            Don't have an account? <a href="#" id="toggleForm">Sign Up</a>
+        </p>
+    </div>
+    <script>
+        const loginForm = document.getElementById('LoginForm');
+const formTitle = document.getElementById('formTitle');
+const submitBtn = document.getElementById('submitBtn');
+const toggleFormLink = document.getElementById('toggleForm');
+const errorMessage = document.getElementById('errorMessage');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+
+let isSignUp = false;
+
+function resetInputFields() {
+    usernameInput.value = '';
+    passwordInput.value = '';
+}
+
+function hashPassword(password) {
+    return btoa(password);
+}
+
+window.onload = () => {
+    if (localStorage.getItem('loggedIn') === 'true') {
+        window.location.href = 'index.html';
+    }
+};
+
+toggleFormLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    isSignUp = !isSignUp;
+
+    if (isSignUp) {
+        formTitle.textContent = 'Sign Up';
+        submitBtn.textContent = 'Sign Up';
+        toggleFormLink.textContent = 'Already have an account? Sign In';
+    } else {
+        formTitle.textContent = 'Log In';
+        submitBtn.textContent = 'Log In';
+        toggleFormLink.textContent = "Don't have an account? Sign Up";
+    }
+
+    errorMessage.textContent = '';
+    resetInputFields();
+});
+
+loginForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    const hashedPassword = hashPassword(password);
+
+    try {
+        if (username === '' || password === '') {
+            throw new Error('Both fields are required.');
+        }
+
+        if (username.length < 3 || password.length < 5) {
+            throw new Error('Username must be at least 3 characters and password at least 5 characters.');
+        }
+
+        if (isSignUp) {
+            localStorage.setItem(`username_${username}`, username);
+            localStorage.setItem(`password_${username}`, hashedPassword);
+            localStorage.setItem(`expenses_${username}`, JSON.stringify([]));
+            alert('Sign up successful!');
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('currentUser', username);
+            window.location.href = 'dashboard.html';
+        } else {
+            const storedUsername = localStorage.getItem(`username_${username}`);
+            const storedPassword = localStorage.getItem(`password_${username}`);
+
+            if (username !== storedUsername || hashedPassword !== storedPassword) {
+                throw new Error('Invalid username or password.');
+            }
+
+            alert('Login successful!');
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('currentUser', username);
+            window.location.href = 'dashboard.html';
+        }
+    } catch (error) {
+        errorMessage.textContent = error.message;
+        errorMessage.style.color = 'red';
+        resetInputFields();
+    }
+});
+
+
+
+
+    </script>
+</body>
+</html>
